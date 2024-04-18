@@ -1,4 +1,4 @@
-<h2>FF14 自动农怪/刷fate(需安装nvavmesh及RotationSolver)</h2>
+<h2>FF14 自动农怪/刷fate(需安装nvavmesh及RotationSolverReborn)</h2>
 
 <h4>[nvavmesh]</h4>
 
@@ -14,7 +14,7 @@ https://puni.sh/api/repository/veyn
 https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json
 ```
 
-<h4>RotationSolverReborn设置</h4>
+<h4>[RotationSolverReborn]设置</h4>
 
 ![](https://raw.githubusercontent.com/c98cmka/LuckyStar/master/1.png)
   
