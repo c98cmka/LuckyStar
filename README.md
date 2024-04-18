@@ -1,4 +1,4 @@
-<h2>自动农怪/刷fate(需安装nvavmesh及RotationSolver)</h2>
+<h2>FF14 自动农怪/刷fate(需安装nvavmesh及RotationSolver)</h2>
 
 <h4>[nvavmesh]</h4>
 
@@ -12,6 +12,6 @@
 
 <h4>RotationSolverReborn设置</h4>
 
-- ![](https://raw.githubusercontent.com/c98cmka/LuckyStar/master/1.png)
+![](https://raw.githubusercontent.com/c98cmka/LuckyStar/master/1.png)
   
-- ![](https://raw.githubusercontent.com/c98cmka/LuckyStar/master/2.png)
+![](https://raw.githubusercontent.com/c98cmka/LuckyStar/master/2.png)

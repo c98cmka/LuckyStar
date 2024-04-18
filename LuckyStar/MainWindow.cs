@@ -130,15 +130,6 @@ public unsafe class MainWindow : Window, IDisposable
 
 
 
-
-
-
-
-
-
-
-
-
         if (Service.FateTable != null && Service.FateTable.Length > 0)
         {
             fateList = Service.FateTable.ToList();
@@ -193,25 +184,25 @@ public unsafe class MainWindow : Window, IDisposable
         ImGui.BeginTabBar("tabbar");
         if (ImGui.BeginTabItem("农怪"))
         {
-            if (ImGui.Button("当前坐标"))
-            {
-                var playerX = Service.ClientState.LocalPlayer.Position.X;
-                var playerY = Service.ClientState.LocalPlayer.Position.Y;
-                var playerZ = Service.ClientState.LocalPlayer.Position.Z;
+            //if (ImGui.Button("当前坐标"))
+            //{
+            //    var playerX = Service.ClientState.LocalPlayer.Position.X;
+            //    var playerY = Service.ClientState.LocalPlayer.Position.Y;
+            //    var playerZ = Service.ClientState.LocalPlayer.Position.Z;
 
-                Service.Chat.Print(playerX.ToString() + ", " + playerY + ", " + playerZ);
-            }
-            ImGui.SameLine();
-            if (ImGui.Button("目标ID"))
-            {
-                if (Service.ClientState.LocalPlayer.TargetObject != null)
-                {
-                    Service.Chat.Print(Service.ClientState.LocalPlayer.TargetObject.DataId.ToString());
-                    //Service.Chat.Print("ismounted:" + (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]).ToString());
-                    //ActionManager.Instance()->UseAction(ActionType.Action, 31, Service.ClientState.LocalPlayer.TargetObject.ObjectId);
-                }
+            //    Service.Chat.Print(playerX.ToString() + ", " + playerY + ", " + playerZ);
+            //}
+            //ImGui.SameLine();
+            //if (ImGui.Button("目标ID"))
+            //{
+            //    if (Service.ClientState.LocalPlayer.TargetObject != null)
+            //    {
+            //        Service.Chat.Print(Service.ClientState.LocalPlayer.TargetObject.DataId.ToString());
+            //        //Service.Chat.Print("ismounted:" + (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]).ToString());
+            //        //ActionManager.Instance()->UseAction(ActionType.Action, 31, Service.ClientState.LocalPlayer.TargetObject.ObjectId);
+            //    }
 
-            }
+            //}
 
             ImGui.Text("萨维奈岛-颇胝迦 (护法村)");
             ImGui.SameLine();
@@ -373,20 +364,20 @@ public unsafe class MainWindow : Window, IDisposable
         }
         if (ImGui.BeginTabItem("Fate"))
         {
-            if (ImGui.Button("Test"))
-            {
-                SyncFate(FateManager.Instance()->CurrentFate->FateId);
-                if (Service.ClientState.LocalPlayer.TargetObject != null)
-                {
-                    Service.Chat.Print(Service.ClientState.LocalPlayer.TargetObject.DataId.ToString());
-                    if (_plugin.CanAttack(142, Service.ClientState.LocalPlayer.TargetObject.Address) == 1)
-                    {
-                        Service.Chat.Print("111");
-                    }
-                    //Service.Chat.Print("ismounted:" + (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]).ToString());
-                    //ActionManager.Instance()->UseAction(ActionType.Action, 31, Service.ClientState.LocalPlayer.TargetObject.ObjectId);
-                }
-            }
+            //if (ImGui.Button("Test"))
+            //{
+            //    SyncFate(FateManager.Instance()->CurrentFate->FateId);
+            //    if (Service.ClientState.LocalPlayer.TargetObject != null)
+            //    {
+            //        Service.Chat.Print(Service.ClientState.LocalPlayer.TargetObject.DataId.ToString());
+            //        if (_plugin.CanAttack(142, Service.ClientState.LocalPlayer.TargetObject.Address) == 1)
+            //        {
+            //            Service.Chat.Print("111");
+            //        }
+            //        //Service.Chat.Print("ismounted:" + (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]).ToString());
+            //        //ActionManager.Instance()->UseAction(ActionType.Action, 31, Service.ClientState.LocalPlayer.TargetObject.ObjectId);
+            //    }
+            //}
             foreach (Fate fateTemp in fateList)
             {
                 if ("Running".Equals(fateTemp.State.ToString()))
