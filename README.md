@@ -3,12 +3,16 @@
 <h4>[nvavmesh]</h4>
 
 - 用于寻路
-- 仓库地址：https://github.com/awgil/ffxiv_navmesh
+```
+https://puni.sh/api/repository/veyn
+```
 
 <h4>[RotationSolverReborn]</h4>
 
 - 用于输出
-- 仓库地址：https://github.com/FFXIV-CombatReborn/RotationSolverReborn
+```
+https://raw.githubusercontent.com/FFXIV-CombatReborn/CombatRebornRepo/main/pluginmaster.json
+```
 
 <h4>RotationSolverReborn设置</h4>
 
