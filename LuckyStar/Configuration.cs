@@ -1,18 +1,26 @@
-﻿using Dalamud.Configuration;
+using Dalamud.Configuration;
 using Dalamud.Plugin;
 using System;
 
-namespace SamplePlugin;
+namespace LuckyStar;
 
 [Serializable]
 public class Configuration : IPluginConfiguration
 {
     public int Version { get; set; } = 0;
 
-    public bool IsConfigWindowMovable { get; set; } = true;
-    public bool SomePropertyToBeSavedAndWithADefault { get; set; } = true;
+    public bool PoZhiJia_1_check = true;
+    public bool PoZhiJia_2_check = true;
+    public bool PoZhiJia_3_check = true;
 
-    // the below exist just to make saving less cumbersome
+    public bool TanXiZhiWu_1_check = true;
+    public bool TanXiZhiWu_2_check = true;
+    public bool TanXiZhiWu_3_check = true;
+
+    public bool YiXiuDa_1_check = true;
+    public bool YiXiuDa_2_check = true;
+    public bool YiXiuDa_3_check = true;
+
     [NonSerialized]
     private DalamudPluginInterface? PluginInterface;
 
