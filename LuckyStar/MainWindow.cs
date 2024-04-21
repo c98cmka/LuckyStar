@@ -408,7 +408,7 @@ public unsafe class MainWindow : Window, IDisposable
                     //    readyToTheNextpos = true;
                     //    isVnavWorking = false;
                     //}
-                    ImGui.BeginDisabled(isRuning);
+                    //ImGui.BeginDisabled(isRuning);
                     if (ImGui.Button($"Go##{fateTemp.FateId}"))
                     {
                         currentFate = fateTemp;
@@ -418,9 +418,9 @@ public unsafe class MainWindow : Window, IDisposable
 
                         TurnOnRS();
 
-                        isRuning = true;
+                        //isRuning = true;
                     }
-                    ImGui.EndDisabled();
+                    //ImGui.EndDisabled();
                     ImGui.SameLine();
                     if (ImGui.Button($"Stop##{fateTemp.FateId}"))
                     {
@@ -428,7 +428,7 @@ public unsafe class MainWindow : Window, IDisposable
                         needToTakeOff = false;
                         readyToTheNextpos = true;
                         isVnavWorking = false;
-                        isRuning = false;
+                        //isRuning = false;
 
                         Stop();
                     }
@@ -443,81 +443,68 @@ public unsafe class MainWindow : Window, IDisposable
     {
         lock (fateEnemyList)
         {
-            if (currentFate.Duration != 100)
+            var targetX = currentFate.Position.X;
+            var targetZ = currentFate.Position.Z;
+
+            var playerX = Service.ClientState.LocalPlayer.Position.X;
+            var playerZ = Service.ClientState.LocalPlayer.Position.Z;
+
+            var Posdistance = Math.Sqrt(Math.Pow(targetX - playerX, 2) + Math.Pow(targetZ - playerZ, 2));
+
+            if (Service.Condition[ConditionFlag.InFlight] && AgentMap.Instance()->IsPlayerMoving != 1 && readyToTheNextpos == true)
             {
-                var targetX = currentFate.Position.X;
-                var targetZ = currentFate.Position.Z;
+                isVnavWorking = true;
+                readyToTheNextpos = false;
+                flyto(currentFate.Position.X, currentFate.Position.Y, currentFate.Position.Z);
+            }
 
-                var playerX = Service.ClientState.LocalPlayer.Position.X;
-                var playerZ = Service.ClientState.LocalPlayer.Position.Z;
+            if (readyToTheNextpos == false && AgentMap.Instance()->IsPlayerMoving != 1 && (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && Posdistance < 3 && isVnavWorking)
+            {
+                Stop();
+                Dismount();
+            }
+            if (!(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]))
+            {
+                isVnavWorking = false;
+            }
 
-                var Posdistance = Math.Sqrt(Math.Pow(targetX - playerX, 2) + Math.Pow(targetZ - playerZ, 2));
+            if (readyToTheNextpos == false && !(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && !isVnavWorking)
+            {
+                SyncFate(currentFate.FateId);
 
-                if (Service.Condition[ConditionFlag.InFlight] && AgentMap.Instance()->IsPlayerMoving != 1 && readyToTheNextpos == true)
+                var minDistance = 1000000;
+                GameObject? closedObject = null;
+                foreach (var temp in fateEnemyList)
                 {
-                    isVnavWorking = true;
-                    readyToTheNextpos = false;
-                    flyto(currentFate.Position.X, currentFate.Position.Y, currentFate.Position.Z);
-                }
-
-                if (readyToTheNextpos == false && AgentMap.Instance()->IsPlayerMoving != 1 && (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && Posdistance < 3 && isVnavWorking)
-                {
-                    Stop();
-                    Dismount();
-                }
-                if (!(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]))
-                {
-                    isVnavWorking = false;
-                }
-
-                if (readyToTheNextpos == false && !(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && !isVnavWorking)
-                {
-                    SyncFate(currentFate.FateId);
-
-                    var minDistance = 1000000;
-                    GameObject? closedObject = null;
-                    foreach (var temp in fateEnemyList)
+                    var distance = (int)Math.Sqrt(Math.Pow(temp.Position.X - playerX, 2) + Math.Pow(temp.Position.Z - playerZ, 2));
+                    if (!temp.IsDead && distance < minDistance)
                     {
-                        var distance = (int)Math.Sqrt(Math.Pow(temp.Position.X - playerX, 2) + Math.Pow(temp.Position.Z - playerZ, 2));
-                        if (!temp.IsDead && distance < minDistance)
-                        {
-                            minDistance = distance;
-                            closedObject = temp;
-                        }
+                        minDistance = distance;
+                        closedObject = temp;
                     }
-                    if (closedObject != null && !closedObject.IsDead)
-                    {
-                        if (minDistance <= 25)
-                        {
-                            var distance = Vector3.Distance(Service.ClientState.LocalPlayer?.Position ?? Vector3.Zero, closedObject.Position);
+                }
 
-                            //Service.Chat.Print("distance:" + distance);
-                            if (distance > 3)
-                            {
-                                walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
-                            }
-                            attackObjectForFate(closedObject);
-                        }
-                        else
+                if (closedObject != null && !closedObject.IsDead)
+                {
+                    if (minDistance <= 25)
+                    {
+                        var distance = Vector3.Distance(Service.ClientState.LocalPlayer?.Position ?? Vector3.Zero, closedObject.Position);
+
+                        //Service.Chat.Print("distance:" + distance);
+                        if (distance > 3)
                         {
                             walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
-                            isVnavWorking = true;
-                            readyToTheNextpos = false;
-
                         }
+                        attackObjectForFate(closedObject);
+                    }
+                    else
+                    {
+                        walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
+                        isVnavWorking = true;
+                        readyToTheNextpos = false;
+
                     }
                 }
-            }
-            else
-            {
-                currentFate = null;
-                needToTakeOff = false;
-                readyToTheNextpos = true;
-                isVnavWorking = false;
-                fateEnemyList = new List<GameObject>();
-                isRuning = false;
-
-                Stop();
             }
         }
     }
