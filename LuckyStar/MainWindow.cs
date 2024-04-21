@@ -345,7 +345,6 @@ public unsafe class MainWindow : Window, IDisposable
 
                 if (Service.Config.YiXiuDa_1_check || Service.Config.YiXiuDa_2_check || Service.Config.YiXiuDa_3_check)
                 {
-                    DataIndex = 30;
                     HuntEnemyId = 10276;
                 }
                 TurnOnRS();
