@@ -1,5 +1,7 @@
 <h2>FF14 自动农怪/刷fate(需安装nvavmesh及RotationSolver)</h2>
 
+- 目前仅支持战士/机工/召唤
+
 <h4>[nvavmesh]</h4>
 
 - 用于寻路

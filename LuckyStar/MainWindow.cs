@@ -164,10 +164,13 @@ public unsafe class MainWindow : Window, IDisposable
 
             foreach (var o in Service.ObjectTable)
             {
-                uint objectFateId = o.Struct()->FateId;
-                if (objectFateId == currentFate.FateId && _plugin.CanAttack(142, o.Address) == 1)
+                if (o != null)
                 {
-                    fateEnemyList.Add(o);
+                    uint objectFateId = o.Struct()->FateId;
+                    if (currentFate != null && objectFateId == currentFate.FateId && _plugin.CanAttack(142, o.Address) == 1 && o.ObjectId != 13372)
+                    {
+                        fateEnemyList.Add(o);
+                    }
                 }
             }
             FateLoop();
@@ -190,7 +193,7 @@ public unsafe class MainWindow : Window, IDisposable
             //    var playerY = Service.ClientState.LocalPlayer.Position.Y;
             //    var playerZ = Service.ClientState.LocalPlayer.Position.Z;
 
-            //    Service.Chat.Print(playerX.ToString() + ", " + playerY + ", " + playerZ);
+            //    Service.Chat.Print(playerX.ToString() + ", " + playerY + ", " + playerZ + "," + Service.ClientState.TerritoryType);
             //}
             //ImGui.SameLine();
             //if (ImGui.Button("目标ID"))
@@ -236,6 +239,8 @@ public unsafe class MainWindow : Window, IDisposable
                 PoZhiJia_1 = true;
                 PoZhiJia_2 = true;
                 PoZhiJia_3 = true;
+
+                TurnOnRS();
 
                 isRuning = true;
             }
@@ -291,6 +296,8 @@ public unsafe class MainWindow : Window, IDisposable
                 TanXiZhiWu_2 = true;
                 TanXiZhiWu_3 = true;
 
+                TurnOnRS();
+
                 isRuning = true;
             }
             ImGui.EndDisabled();
@@ -338,8 +345,10 @@ public unsafe class MainWindow : Window, IDisposable
 
                 if (Service.Config.YiXiuDa_1_check || Service.Config.YiXiuDa_2_check || Service.Config.YiXiuDa_3_check)
                 {
+                    DataIndex = 30;
                     HuntEnemyId = 10276;
                 }
+                TurnOnRS();
                 needToTakeOff = true;
 
                 isRuning = true;
@@ -400,13 +409,19 @@ public unsafe class MainWindow : Window, IDisposable
                     //    readyToTheNextpos = true;
                     //    isVnavWorking = false;
                     //}
+                    ImGui.BeginDisabled(isRuning);
                     if (ImGui.Button($"Go##{fateTemp.FateId}"))
                     {
                         currentFate = fateTemp;
                         needToTakeOff = true;
                         readyToTheNextpos = true;
                         isVnavWorking = false;
+
+                        TurnOnRS();
+
+                        isRuning = true;
                     }
+                    ImGui.EndDisabled();
                     ImGui.SameLine();
                     if (ImGui.Button($"Stop##{fateTemp.FateId}"))
                     {
@@ -414,6 +429,7 @@ public unsafe class MainWindow : Window, IDisposable
                         needToTakeOff = false;
                         readyToTheNextpos = true;
                         isVnavWorking = false;
+                        isRuning = false;
 
                         Stop();
                     }
@@ -426,81 +442,85 @@ public unsafe class MainWindow : Window, IDisposable
 
     public void FateLoop()
     {
-        if (currentFate.Duration != 100)
+        lock (fateEnemyList)
         {
-            var targetX = currentFate.Position.X;
-            var targetZ = currentFate.Position.Z;
-
-            var playerX = Service.ClientState.LocalPlayer.Position.X;
-            var playerZ = Service.ClientState.LocalPlayer.Position.Z;
-
-            var Posdistance = Math.Sqrt(Math.Pow(targetX - playerX, 2) + Math.Pow(targetZ - playerZ, 2));
-
-            if (Service.Condition[ConditionFlag.InFlight] && AgentMap.Instance()->IsPlayerMoving != 1 && readyToTheNextpos == true)
+            if (currentFate.Duration != 100)
             {
-                isVnavWorking = true;
-                readyToTheNextpos = false;
-                flyto(currentFate.Position.X, currentFate.Position.Y, currentFate.Position.Z);
-            }
+                var targetX = currentFate.Position.X;
+                var targetZ = currentFate.Position.Z;
 
-            if (readyToTheNextpos == false && AgentMap.Instance()->IsPlayerMoving != 1 && (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && Posdistance < 3 && isVnavWorking)
-            {
-                Stop();
-                Dismount();
-            }
-            if (!(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]))
-            {
-                isVnavWorking = false;
-            }
+                var playerX = Service.ClientState.LocalPlayer.Position.X;
+                var playerZ = Service.ClientState.LocalPlayer.Position.Z;
 
-            if (readyToTheNextpos == false && !(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && !isVnavWorking)
-            {
-                SyncFate(currentFate.FateId);
+                var Posdistance = Math.Sqrt(Math.Pow(targetX - playerX, 2) + Math.Pow(targetZ - playerZ, 2));
 
-                var minDistance = 1000000;
-                GameObject closedObject = null;
-                foreach (var temp in fateEnemyList)
+                if (Service.Condition[ConditionFlag.InFlight] && AgentMap.Instance()->IsPlayerMoving != 1 && readyToTheNextpos == true)
                 {
-                    var distance = (int)Math.Sqrt(Math.Pow(temp.Position.X - playerX, 2) + Math.Pow(temp.Position.Z - playerZ, 2));
-                    if (!temp.IsDead && distance < minDistance)
-                    {
-                        minDistance = distance;
-                        closedObject = temp;
-                    }
+                    isVnavWorking = true;
+                    readyToTheNextpos = false;
+                    flyto(currentFate.Position.X, currentFate.Position.Y, currentFate.Position.Z);
                 }
-                if (closedObject != null)
-                {
-                    if (minDistance <= 25)
-                    {
-                        var distance = Vector3.Distance(Service.ClientState.LocalPlayer?.Position ?? Vector3.Zero, closedObject.Position);
 
-                        //Service.Chat.Print("distance:" + distance);
-                        if (distance > 3)
+                if (readyToTheNextpos == false && AgentMap.Instance()->IsPlayerMoving != 1 && (Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && Posdistance < 3 && isVnavWorking)
+                {
+                    Stop();
+                    Dismount();
+                }
+                if (!(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]))
+                {
+                    isVnavWorking = false;
+                }
+
+                if (readyToTheNextpos == false && !(Service.Condition[ConditionFlag.Mounted] || Service.Condition[ConditionFlag.Mounted2]) && !isVnavWorking)
+                {
+                    SyncFate(currentFate.FateId);
+
+                    var minDistance = 1000000;
+                    GameObject? closedObject = null;
+                    foreach (var temp in fateEnemyList)
+                    {
+                        var distance = (int)Math.Sqrt(Math.Pow(temp.Position.X - playerX, 2) + Math.Pow(temp.Position.Z - playerZ, 2));
+                        if (!temp.IsDead && distance < minDistance)
+                        {
+                            minDistance = distance;
+                            closedObject = temp;
+                        }
+                    }
+                    if (closedObject != null && !closedObject.IsDead)
+                    {
+                        if (minDistance <= 25)
+                        {
+                            var distance = Vector3.Distance(Service.ClientState.LocalPlayer?.Position ?? Vector3.Zero, closedObject.Position);
+
+                            //Service.Chat.Print("distance:" + distance);
+                            if (distance > 3)
+                            {
+                                walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
+                            }
+                            attackObjectForFate(closedObject);
+                        }
+                        else
                         {
                             walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
-                        }
-                        attackObjectForFate(closedObject);
-                    }
-                    else
-                    {
-                        walkto(closedObject.Position.X, closedObject.Position.Y, closedObject.Position.Z);
-                        isVnavWorking = true;
-                        readyToTheNextpos = false;
+                            isVnavWorking = true;
+                            readyToTheNextpos = false;
 
+                        }
                     }
                 }
             }
-        }
-        else {
-            currentFate = null;
-            needToTakeOff = false;
-            readyToTheNextpos = true;
-            isVnavWorking = false;
-            fateEnemyList = new List<GameObject>();
+            else
+            {
+                currentFate = null;
+                needToTakeOff = false;
+                readyToTheNextpos = true;
+                isVnavWorking = false;
+                fateEnemyList = new List<GameObject>();
+                isRuning = false;
 
-            Stop();
+                Stop();
+            }
         }
-        
     }
 
     public void AShuTuoLoop()
@@ -1003,24 +1023,21 @@ public unsafe class MainWindow : Window, IDisposable
 
     public void YiXiuDaLoop()
     {
+        if (DataIndex == YiXiuDa.AllPosData.Count())
+        {
+            DataIndex = 0;
+            reset();
+        }
         if ((Service.Config.YiXiuDa_1_check && YiXiuDa.AllPosData[DataIndex].huntId == 10276) ||
         (Service.Config.YiXiuDa_2_check && YiXiuDa.AllPosData[DataIndex].huntId == 10277) ||
         (Service.Config.YiXiuDa_3_check && YiXiuDa.AllPosData[DataIndex].huntId == 10280))
         {
             if (Service.Condition[ConditionFlag.InFlight] && AgentMap.Instance()->IsPlayerMoving != 1 && readyToTheNextpos == true)
             {
-                if (DataIndex == YiXiuDa.AllPosData.Count())
-                {
-                    DataIndex = 0;
-                    reset();
-                }
-                else
-                {
-                    flyto(YiXiuDa.AllPosData[DataIndex].Item2.X, YiXiuDa.AllPosData[DataIndex].Item2.Y, YiXiuDa.AllPosData[DataIndex].Item2.Z);
-                    HuntEnemyId = YiXiuDa.AllPosData[DataIndex].huntId;
-                    isVnavWorking = true;
-                    readyToTheNextpos = false;
-                }
+                flyto(YiXiuDa.AllPosData[DataIndex].Item2.X, YiXiuDa.AllPosData[DataIndex].Item2.Y, YiXiuDa.AllPosData[DataIndex].Item2.Z);
+                HuntEnemyId = YiXiuDa.AllPosData[DataIndex].huntId;
+                isVnavWorking = true;
+                readyToTheNextpos = false;
             }
             var playerX = Service.ClientState.LocalPlayer.Position.X;
             var playerZ = Service.ClientState.LocalPlayer.Position.Z;
@@ -1108,7 +1125,7 @@ public unsafe class MainWindow : Window, IDisposable
     }
     public void attackObject(GameObject o)
     {
-        if (o is null) return;
+        if (o is null || o.IsDead) return;
         Service.TargetManager.SetTarget(o);
         BattleChara b = o as BattleChara;
         uint jobId = Service.ClientState.LocalPlayer.ClassJob.Id;
@@ -1130,7 +1147,7 @@ public unsafe class MainWindow : Window, IDisposable
     }
     public void attackObjectForFate(GameObject o)
     {
-        if (o is null) return;
+        if (o is null || o.IsDead) return;
         Service.TargetManager.SetTarget(o);
 
         BattleChara b = o as BattleChara;
@@ -1201,6 +1218,11 @@ public unsafe class MainWindow : Window, IDisposable
     {
         ActionManager.Instance()->UseAction(ActionType.GeneralAction, 2); //起飞
         needToTakeOff = false;
+    }
+    public void TurnOnRS()
+    {
+        _chat.ExecuteCommand($"/rotation off");
+        _chat.ExecuteCommand($"/rotation Auto");
     }
     public void Stop()
     {
